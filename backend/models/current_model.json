@@ -1,0 +1,1 @@
+{"current_model": "random_forest", "version": "cbb59a00", "last_trained": "2025-03-12T05:07:23.185649", "features": ["ingredient_cost", "quantity", "waste_percentage", "processing_cost"], "metrics": {"mae": 0.0, "mse": 0.0, "r2": 1.0, "cv_score": 1.0, "is_fallback": true}}
