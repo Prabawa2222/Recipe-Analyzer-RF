@@ -118,6 +118,13 @@ class ModelPerformance(Base, BaseDBModel):
     training_time = Column(Float, nullable=True)
 
 
+class PriceCalculationInput(BaseModel):
+    recipe_id: int
+    target_margin: float = Field(
+        ..., gt=0, le=100, description="Target profit margin percentage"
+    )
+
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -684,17 +691,21 @@ def log_prediction(
 
 @app.post("/calculate-price", response_model=Dict[str, Any])
 def calculate_price(
-    recipe_id: int, margin_input: ProfitMarginInput, db: Session = Depends(get_db)
+    calculation_input: PriceCalculationInput, db: Session = Depends(get_db)
 ):
     """Calculate suggested price based on target profit margin"""
     try:
         # Get recipe from database
-        recipe = db.query(RecipeCost).filter(RecipeCost.id == recipe_id).first()
+        recipe = (
+            db.query(RecipeCost)
+            .filter(RecipeCost.id == calculation_input.recipe_id)
+            .first()
+        )
         if not recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
 
         # Calculate suggested price based on target margin
-        target_margin = margin_input.target_margin
+        target_margin = calculation_input.target_margin
         suggested_price = recipe.cost_per_unit * (1 + target_margin / 100)
 
         # Update recipe in database
